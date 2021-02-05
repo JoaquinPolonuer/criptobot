@@ -40,7 +40,7 @@ def get_all_historical_data(coin,last_datetime = dt.datetime(2013, 1, 1), interv
 
     while True:
         new_df = get_binance_bars(coin, interval, last_datetime, dt.datetime.now())
-        print(last_datetime)
+        # print(last_datetime)
         if len(new_df) < 5:
             break
         df_list.append(new_df)
