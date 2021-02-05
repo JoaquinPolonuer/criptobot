@@ -1,4 +1,4 @@
-from model_creator import Model_Creator
+from model_creator_api import Model_Creator
 from historical_data import get_all_historical_data
 import datetime as dt
 
@@ -7,7 +7,7 @@ model = Model_Creator()
 model.epochs = 1
 model.batch_size = 1
 model.days_anticipated = 60
-model.train_percentaje = 0.8
+model.train_percentaje = 0.9
 
 currency = "BTCUSDT"
 df = get_all_historical_data(currency,dt.datetime(2013,12,1))
