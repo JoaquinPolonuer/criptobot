@@ -16,6 +16,11 @@ class Model_Creator:
         self.batch_size = 1
         self.days_anticipated = 60
         self.train_percentaje = 0.9
+        self.training_data_len = 0
+
+        self.scaled_data = []
+        self.dataset = []
+        self.data = []
 
         self.x_train = []
         self.y_train = []
@@ -23,7 +28,8 @@ class Model_Creator:
         self.x_test = []
         self.y_test = []     
 
-        self.model = []           
+        self.model = []   
+        self.scaler = []        
 
     def load_dataset(self,dataframe, currency):
         self.df = dataframe
@@ -31,14 +37,17 @@ class Model_Creator:
 
     
     def prepare_dataset(self):
-        data = self.df.filter(["close"])
+        self.data = self.df.filter(["close"])
         #convert dataframe to np array
-        dataset = data.values
-        training_data_len = math.ceil(len(dataset)*self.train_percentaje)
-        scaler = MinMaxScaler(feature_range=(0,1))
-        scaled_data = scaler.fit_transform(dataset) 
-        train_data = scaled_data[0:training_data_len,:]
-    
+        self.dataset = self.data.values
+        self.training_data_len = math.ceil(len(self.dataset)*self.train_percentaje)
+        self.scaler = MinMaxScaler(feature_range=(0,1))
+        self.scaled_data = self.scaler.fit_transform(self.dataset) 
+        train_data = self.scaled_data[0:self.training_data_len,:]
+
+        self.x_train = []
+        self.x_train = []
+
         for i in range(self.days_anticipated,len(train_data)):
             self.x_train.append(train_data[i-self.days_anticipated:i,0])
             self.y_train.append(train_data[i,0])
@@ -64,4 +73,32 @@ class Model_Creator:
         self.model.fit(self.x_train,self.y_train,batch_size=self.batch_size,epochs=self.epochs)
         self.model.save(model_name)
 
+    def test_model(self):
+        test_data = self.scaled_data[self.training_data_len - self.days_anticipated: , :]
+
+        self.y_test = self.dataset[self.training_data_len: , :]
+
+        self.x_test = []
+        for i in range(self.days_anticipated, len(test_data)):
+            self.x_test.append(test_data[i-self.days_anticipated:i, 0])
+        
+        self.x_test = np.array(self.x_test)
+
+        self.x_test = np.reshape(self.x_test,(self.x_test.shape[0],self.x_test.shape[1],1))
+
+        predictions = self.model.predict(self.x_test)
+        predictions = self.scaler.inverse_transform(predictions)
+
+        rmse = np.sqrt(np.mean(((predictions- self.y_test)**2)))
+        print(rmse)
+
+        train = self.data[:self.training_data_len]
+        valid = self.data[self.training_data_len:]
+        valid["Predictions"] = predictions
+        plt.figure(figsize=(16,8))
+        plt.title("Model")
+        plt.plot(train["close"])
+        plt.plot(valid[["close", "Predictions"]])
+        plt.legend(["Train", "Val", "Predictions"], loc="lower right")
+        plt.show()
 
