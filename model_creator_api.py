@@ -67,8 +67,8 @@ class Model_Creator:
         self.model.add(Dense(1))
         self.model.compile(optimizer="adam", loss="mean_squared_error")
 
-    def train_model(self):
-        model_name = self.currency + "_" + str(self.epochs) +"_epochs_" + str(self.batch_size) + "_batch_" + str(self.days_anticipated) +"_days_anticipated"+".h5"
+    def train_model(self, comment=""):
+        model_name = comment+self.currency + "_" + str(self.epochs) +"_epochs_" + str(self.batch_size) + "_batch_" + str(self.days_anticipated) +"_days_anticipated"+".h5"
         print("will save at", model_name)
         self.model.fit(self.x_train,self.y_train,batch_size=self.batch_size,epochs=self.epochs)
         self.model.save(model_name)
